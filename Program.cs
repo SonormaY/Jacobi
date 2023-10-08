@@ -1,44 +1,29 @@
-﻿double[] Solve(double[][] A, double[] b, double tolerance = 1e-6, int maxIterations = 1000)
+﻿using System.Numerics;
+
+Vector<double> Solve(double[,] A, double[] b, double eps)
 {
     int n = b.Length;
-    double[] x = new double[n];
-    double[] xNew = new double[n];
+    Vector<double> x = new Vector<double>(n);
+    Vector<double> x_prev = new Vector<double>(n);
 
-    for (int iteration = 0; iteration < maxIterations; iteration++)
+    while (Norm(x - x_prev) > eps)
     {
+        x_prev = x;
         for (int i = 0; i < n; i++)
         {
-            double sum = 0;
-            for (int j = 0; j < n; j++)
-            {
-                if (j != i)
-                {
-                    sum += A[i][j] * x[j];
-                }
-            }
-            xNew[i] = (b[i] - sum) / A[i][i];
+            double temp = 0;
+            for (int j = 0; j < n; j++) if (i != j) temp += A[i, j] * x_prev[j];
+            temp = (b[i] - temp) / A[i, i];
         }
-
-        // Перевірка на збіжність за допомогою відносної різниці між двома послідовними наближеннями.
-        double maxDifference = 0;
-        for (int i = 0; i < n; i++)
-        {
-            double difference = Math.Abs(xNew[i] - x[i]);
-            if (difference > maxDifference)
-            {
-                maxDifference = difference;
-            }
-        }
-
-        if (maxDifference < tolerance)
-        {
-            return xNew; // Збіжність досягнута.
-        }
-
-        Array.Copy(xNew, x, n);
     }
 
-    throw new Exception("Метод Якобі не збігся протягом вказаної кількості ітерацій.");
+
+    return x;
 }
 
-Console.WriteLine(1);
+double Norm(Vector<double> x)
+{
+    return Math.Sqrt(Vector.Sum(x * x));
+}
+
+
